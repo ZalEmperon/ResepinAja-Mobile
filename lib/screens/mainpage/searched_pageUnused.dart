@@ -14,12 +14,10 @@ class ResultPage extends StatefulWidget {
 class _ResultPageState extends State<ResultPage> {
   List<Item>? reseptersimpan;
   List<Item>? filteredResep; // For search results
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _searchController.addListener(_filterResep); // Add search listener
     _loadData();
   }
 
@@ -32,22 +30,6 @@ class _ResultPageState extends State<ResultPage> {
         filteredResep = tersimpan; // Initialize filtered list
       });
     }
-  }
-
-  void _filterResep() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      filteredResep =
-          reseptersimpan?.where((resep) {
-            return resep.judul.toLowerCase().contains(query);
-          }).toList();
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override

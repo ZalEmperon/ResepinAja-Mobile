@@ -35,14 +35,34 @@ class _CardItem_HoriState extends State<CardItem_Hori> {
                 children: [
                   Container(
                     margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                    child: Image.network(
-                      "http://10.0.2.2:8000/storage/${widget.data.gambar}",
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.cover,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+
+                      child: Image.network(
+                        "http://192.168.100.9:8000/storage/${widget.data.gambar}",
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  Text(widget.data.judul, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 195,
+                        child: Text(
+                          widget.data.judul,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 17.5),
+                        ),
+                      ),
+                      Text(
+                        "${widget.data.jumlah_bahan} Bahan | ${widget.data.wkt_masak} Menit \n${widget.data.prs_resep} Porsi",
+                      ),
+                    ],
+                  ),
                 ],
               ),
               Column(
@@ -87,13 +107,24 @@ class _CardItem_CubeState extends State<CardItem_Cube> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(
-                "http://10.0.2.2:8000/storage/${widget.data.gambar}",
-                width: 150,
-                height: 150,
-                fit: BoxFit.cover,
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  "http://192.168.100.9:8000/storage/${widget.data.gambar}",
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.cover,
+                ),
               ),
-              Text(widget.data.judul, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20)),
+              SizedBox(
+                width: 145, // same as the image width
+                child: Text(
+                  widget.data.judul,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+                ),
+              ),
               Wrap(
                 children: [
                   Icon(Icons.star),
@@ -133,9 +164,7 @@ class _CardItem_RatingState extends State<CardItem_Rating> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => ProfilePage(id_user: widget.data.id_user),
-                      ),
+                      MaterialPageRoute(builder: (context) => ProfilePage(id_user: widget.data.id_user)),
                     );
                   },
                   child: Wrap(

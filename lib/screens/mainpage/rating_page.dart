@@ -18,10 +18,10 @@ class _RatingPageState extends State<RatingPage> {
   @override
   void initState() {
     super.initState();
-    setValue();
+    _loadData();
   }
 
-  void setValue() async {
+  void _loadData() async {
     final rating = await Userservice.showResepRating(widget.id_resep);
     if (rating != null) {
       setState(() {
@@ -34,7 +34,10 @@ class _RatingPageState extends State<RatingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Rating Resep", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)), backgroundColor: Colors.redAccent),
+      appBar: AppBar(
+        title: Text("Rating Resep", style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
+        backgroundColor: Colors.redAccent,
+      ),
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())

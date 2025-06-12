@@ -25,18 +25,19 @@ class _SavedPageState extends State<SavedPage> {
   }
 
   Future<void> _loadData() async {
-    final id_user = AppData().id_user ?? 0;
+    // final id_user = null;
+    final id_user = AppData().id_user;
     log(id_user.toString() + " Stein");
 
-    final tersimpan = await Recipeservice.showResepTersimpan(id_user);
+    final tersimpan = await Recipeservice.showResepTersimpan(id_user!);
     if (tersimpan != null) {
       setState(() {
         log("NEMOOOO");
         reseptersimpan = tersimpan;
         filteredResep = tersimpan; // Initialize filtered list
       });
-    }else{
-        log("SINANJU");
+    } else {
+      log("SINANJU");
     }
   }
 
@@ -63,7 +64,6 @@ class _SavedPageState extends State<SavedPage> {
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-
           backgroundColor: Colors.redAccent,
           toolbarHeight: 90,
           title: Padding(

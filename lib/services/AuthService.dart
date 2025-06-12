@@ -5,10 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:developer';
 
+// + Ubah Form Tambah_____DONEE
+// + Tambah Halaman show product + searching_____DONEE
+// + Ubah profil_____DONEE
+// + Ubah isi Detail
+// + Solve Data ga keupdate
+
 class Authservice {
   static Future<bool> register(String username, String password, String phone, String pass_confirm) async {
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/api/register'),
+      Uri.parse('http://192.168.100.9:8000/api/register'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       body: jsonEncode({
         'username': username,
@@ -30,7 +36,7 @@ class Authservice {
     final _storage = FlutterSecureStorage();
     final prefs = await SharedPreferences.getInstance();
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/api/login'),
+      Uri.parse('http://192.168.100.9:8000/api/login'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       body: jsonEncode({'username': username, 'password': password}),
     );
@@ -55,7 +61,7 @@ class Authservice {
     final prefs = await SharedPreferences.getInstance();
 
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/api/logout'),
+      Uri.parse('http://192.168.100.9:8000/api/logout'),
       headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -65,8 +71,12 @@ class Authservice {
       await prefs.remove('no_hp');
       await prefs.remove('deskripsi_user');
       await prefs.remove('role');
+      log("Aku Mau Logout");
+      log(response.body);
       return true;
     } else {
+      log("gabisa Logout");
+      log(response.body);
       return false;
     }
   }
@@ -74,7 +84,7 @@ class Authservice {
   Future<bool?> editProfile({String? deskripsi, String? password, String? passwordConfirm}) async {
     final token = AppData().token;
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/api/edit-profile'),
+      Uri.parse('http://192.168.100.9:8000/api/edit-profile'),
       headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
       body: {
         if (deskripsi != null) 'deskripsi_user': deskripsi,
@@ -83,7 +93,7 @@ class Authservice {
       },
     );
     if (response.statusCode == 200) {
-    log("SinanjuSetFREE");
+      log("SinanjuSetFREE");
       return true;
     }
     log(response.body);

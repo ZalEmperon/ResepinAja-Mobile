@@ -22,14 +22,13 @@ class MainApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/splash',
       routes: {
-        '/': (context) => HomeBase(),
+        // '/': (context) => HomeBase(),
+        // '/register': (context) => RegisterPage(),
         '/splash': (context) => SplashScreen(),
         '/login': (context) => LoginPage(),
-        '/register': (context) => RegisterPage(),
         // '/profile' : (context) => ProfilePage(),
       },
       // home: const LoginPage(),
     );
   }
 }
-

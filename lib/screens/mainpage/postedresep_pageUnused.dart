@@ -24,7 +24,6 @@ class _ResepSendiriState extends State<ResepSendiri> {
   }
 
   Future<void> _loadData() async {
-
     final tersimpan = await Recipeservice.showResepSendiri(widget.id_user);
     if (mounted) {
       setState(() {
@@ -66,7 +65,7 @@ class _ResepSendiriState extends State<ResepSendiri> {
                 controller: _searchController,
                 leading: const Icon(Icons.search),
                 hintText: "Cari Resep",
-                onChanged: (_) {}, 
+                onChanged: (_) {},
               ),
             ),
           ),

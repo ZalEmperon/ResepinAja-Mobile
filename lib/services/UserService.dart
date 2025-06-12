@@ -7,7 +7,7 @@ import 'package:resepinajamobile/models/UserData.dart';
 class Userservice {
   static Future<List<Rating>?> showResepRating(int id_resep) async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/ratingresep/$id_resep'),
+      Uri.parse('http://192.168.100.9:8000/api/ratingresep/$id_resep'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -32,7 +32,7 @@ class Userservice {
 
   static Future<Userdata?> showProfile(int id_user) async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/profil/$id_user'),
+      Uri.parse('http://192.168.100.9:8000/api/profil/$id_user'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -46,8 +46,12 @@ class Userservice {
   static Future<bool?> deleteUserRating(int? id_user, int? id_resep) async {
     final token = AppData().token;
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2:8000/api/del-rating'),
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      Uri.parse('http://192.168.100.9:8000/api/del-rating'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
       body: jsonEncode({'id_resep': id_resep, 'id_user': id_user}),
     );
     if (response.statusCode == 200) {

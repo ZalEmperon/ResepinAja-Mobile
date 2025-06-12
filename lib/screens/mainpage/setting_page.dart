@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:resepinajamobile/models/AppData.dart';
+import 'package:resepinajamobile/screens/mainpage/save_page.dart';
 import 'package:resepinajamobile/screens/mainpage/user_page.dart';
 import 'package:resepinajamobile/services/AuthService.dart';
-import 'package:resepinajamobile/screens/mainpage/postedresep_page.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
@@ -27,10 +27,10 @@ class _SettingPageState extends State<SettingPage> {
   @override
   void initState() {
     super.initState();
-    setValue();
+    _loadData();
   }
 
-  Future<void> setValue() async {
+  Future<void> _loadData() async {
     setState(() {
       id_user = AppData().id_user ?? 0;
       username = AppData().username ?? 'Guest';
@@ -123,17 +123,15 @@ class _SettingPageState extends State<SettingPage> {
               child: TextButton(
                 style: TextButton.styleFrom(backgroundColor: Colors.amber),
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => ResepSendiri(id_user: id_user)),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => SavedPage()));
                 },
                 child: Text(
-                  "Lihat Resepku ",
+                  "Lihat Resep tersimpanku ",
                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Colors.black),
                 ),
               ),
             ),
+            SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
               child: TextButton(
@@ -143,7 +141,7 @@ class _SettingPageState extends State<SettingPage> {
                     context: context,
                     builder:
                         (context) => AlertDialog(
-                          title: Text("Hapus Resep"),
+                          title: Text("Logout Resepin Aja"),
                           content: Text("Yakin ingin Logout?"),
                           actions: [
                             TextButton(onPressed: () => Navigator.pop(context), child: Text("Batal")),

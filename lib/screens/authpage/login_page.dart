@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:resepinajamobile/models/AppData.dart';
+import 'package:resepinajamobile/screens/mainpage/base_page.dart';
 import 'package:resepinajamobile/services/AuthService.dart';
+import 'package:resepinajamobile/screens/authpage/register_page.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,13 +26,15 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       final status = await Authservice.login(username, password);
       if (status == true) {
-        Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
+        await AppData().fetchAll();
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomeBase()), (route) => false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Login failed. Please check credentials.')));
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +47,12 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/LogoResJa.png',
-                  height: 100, // kasih tinggi supaya lebih rapi
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    'assets/LogoResJa.jpg',
+                    height: 100, // kasih tinggi supaya lebih rapi
+                  ),
                 ),
                 SizedBox(height: 30),
                 Text(
@@ -85,7 +94,11 @@ class _LoginPageState extends State<LoginPage> {
                           Text("Don't have an account? "),
                           GestureDetector(
                             onTap: () {
-                              Navigator.pushNamed(context, '/register');
+                              // Navigator.pushNamed(context, '/register');
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => RegisterPage()),
+                              );
                             },
                             child: Text(
                               "Register Here",

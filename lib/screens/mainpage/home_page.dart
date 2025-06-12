@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:resepinajamobile/models/AppData.dart';
 import 'package:resepinajamobile/models/Item.dart';
 import 'package:resepinajamobile/screens/component/cards.dart';
-import 'package:resepinajamobile/screens/mainpage/searched_page.dart';
+import 'package:resepinajamobile/screens/mainpage/searched_pageUnused.dart';
+import 'package:resepinajamobile/screens/mainpage/user_page.dart';
 import 'package:resepinajamobile/services/RecipeService.dart';
 
 class HomePage extends StatefulWidget {
@@ -17,10 +19,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    setValue();
+    _loadData();
   }
 
-  Future<void> setValue() async {
+  Future<void> _loadData() async {
     final baru = await Recipeservice.showResepBaru();
     final populer = await Recipeservice.showResepPopuler();
     if (baru != null && populer != null) {
@@ -34,7 +36,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: setValue,
+      onRefresh: _loadData,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -44,18 +46,26 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.all(10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.85,
-                  child: SearchBar(
-                    leading: Icon(Icons.search),
-                    hintText: "Mulai Cari Resep",
-                    onSubmitted: (value) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => ResultPage(kunci: value)),
-                      );
-                    },
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(45),
+                  child: Image.asset(
+                    'assets/LogoResJa.jpg',
+                    height: 55,
+                  ),
+                ),
+                Text("Resepin Aja", style: TextStyle(color: Colors.white, fontSize: 20),),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ProfilePage(id_user: AppData().id_user)),
+                    );
+                  },
+                  child: CircleAvatar(
+                    radius: 25,
+                    backgroundImage: AssetImage('assets/profile_placeholder.webp'),
                   ),
                 ),
               ],
@@ -72,7 +82,10 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 10.0),
-                        child: Text("Terpopuler", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24)),
+                        child: Text(
+                          "Terpopuler",
+                          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+                        ),
                       ),
                       SizedBox(
                         height: 235,

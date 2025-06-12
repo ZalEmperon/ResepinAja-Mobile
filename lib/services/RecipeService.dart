@@ -3,15 +3,19 @@ import 'package:resepinajamobile/models/Alat.dart';
 import 'package:resepinajamobile/models/AppData.dart';
 import 'package:resepinajamobile/models/Bahan.dart';
 import 'package:resepinajamobile/models/Detail.dart';
+import 'dart:developer';
 import 'dart:convert';
 import 'package:resepinajamobile/models/Item.dart';
 import 'package:resepinajamobile/models/Langkah.dart';
 
-class Recipeservice {
+// + Filter Kategori
+// + Filter Resep Terbaru dan Terlama
+// + Filter Nama Resep dan Nama User
 
+class Recipeservice {
   static Future<List<Item>?> showResepBaru() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/resepbaru'),
+      Uri.parse('http://192.168.100.9:8000/api/resepbaru'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -25,6 +29,9 @@ class Recipeservice {
               json['bintang']?.toDouble() ?? 0.0,
               json['judul'] as String,
               json['gambar'] as String,
+              json['wkt_masak'] as int,
+              json['prs_resep'] as int,
+              json['jumlah_bahan'] as int,
             ),
           )
           .toList();
@@ -35,7 +42,7 @@ class Recipeservice {
 
   static Future<List<Item>?> showResepPopuler() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/reseppopuler'),
+      Uri.parse('http://192.168.100.9:8000/api/reseppopuler'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -49,6 +56,9 @@ class Recipeservice {
               json['bintang']?.toDouble() ?? 0.0,
               json['judul'] as String,
               json['gambar'] as String,
+              json['wkt_masak'] as int,
+              json['prs_resep'] as int,
+              json['jumlah_bahan'] as int,
             ),
           )
           .toList();
@@ -57,11 +67,13 @@ class Recipeservice {
     }
   }
 
-  static Future<List<Item>?> showResepCari(String kunci) async {
+  static Future<List<Item>?> showResepCari(Map<String, dynamic>? params) async {
+    final uri = Uri.parse('http://192.168.100.9:8000/api/resepcari').replace(queryParameters: params);
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/resepcari/$kunci'),
+      uri,
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
+    log(uri.toString());
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final List<dynamic> items = data['data'];
@@ -73,6 +85,9 @@ class Recipeservice {
               json['bintang']?.toDouble() ?? 0.0,
               json['judul'] as String,
               json['gambar'] as String,
+              json['wkt_masak'] as int,
+              json['prs_resep'] as int,
+              json['jumlah_bahan'] as int,
             ),
           )
           .toList();
@@ -82,10 +97,8 @@ class Recipeservice {
   }
 
   static Future<List<Item>?> showResepSendiri(int id_user) async {
-    // final prefs = await SharedPreferences.getInstance();
-    // final id_user = prefs.getInt('id_user');
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/resepsendiri/$id_user'),
+      Uri.parse('http://192.168.100.9:8000/api/resepsendiri/$id_user'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     if (response.statusCode == 200) {
@@ -99,6 +112,9 @@ class Recipeservice {
               json['bintang']?.toDouble() ?? 0.0,
               json['judul'] as String,
               json['gambar'] as String,
+              json['wkt_masak'] as int,
+              json['prs_resep'] as int,
+              json['jumlah_bahan'] as int,
             ),
           )
           .toList();
@@ -110,7 +126,7 @@ class Recipeservice {
   static Future<List<Item>?> showResepTersimpan(int id_user) async {
     final token = AppData().token;
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/tersimpanresep/$id_user'),
+      Uri.parse('http://192.168.100.9:8000/api/tersimpanresep/$id_user'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -118,6 +134,7 @@ class Recipeservice {
       },
     );
     if (response.statusCode == 200) {
+      log(response.body);
       final data = jsonDecode(response.body);
       final List<dynamic> items = data['data'];
       return items
@@ -128,6 +145,9 @@ class Recipeservice {
               json['bintang']?.toDouble() ?? 0.0,
               json['judul'] as String,
               json['gambar'] as String,
+              json['wkt_masak'] as int,
+              json['prs_resep'] as int,
+              json['jumlah_bahan'] as int,
             ),
           )
           .toList();
@@ -139,7 +159,7 @@ class Recipeservice {
   static Future<Detail?> showResepDetail(int id_resep) async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/detailresep/$id_resep'),
+        Uri.parse('http://192.168.100.9:8000/api/detailresep/$id_resep'),
         headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       );
 
@@ -163,8 +183,13 @@ class Recipeservice {
         final List<Bahan> bahanList =
             (data['bahan'] as List)
                 .map(
-                  (json) =>
-                      Bahan(json['id_bahan'] as int, json['id_resep'] as int, json['nama_bahan'] as String),
+                  (json) => Bahan(
+                    json['id_bahan'] as int,
+                    json['id_resep'] as int,
+                    json['nama_bahan'] as String,
+                    json['jml_bahan'] as int,
+                    json['stn_bahan'] as String,
+                  ),
                 )
                 .toList();
 
@@ -188,6 +213,9 @@ class Recipeservice {
           resep['id_user'] as int,
           resep['username'] as String,
           resep['bintang'].toString(),
+          resep['wkt_masak'] as int,
+          resep['prs_resep'] as int,
+          resep['ktg_masak'] as String,
           alatList,
           bahanList,
           langkahList,
@@ -198,5 +226,4 @@ class Recipeservice {
     }
     return null;
   }
-  
 }

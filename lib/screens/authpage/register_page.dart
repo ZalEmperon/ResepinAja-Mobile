@@ -44,7 +44,13 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/LogoRoGer.png', height: 100),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    'assets/LogoResJa.jpg',
+                    height: 100, // kasih tinggi supaya lebih rapi
+                  ),
+                ),
                 SizedBox(height: 30),
                 Text("SIGN UP", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
                 SizedBox(height: 30),

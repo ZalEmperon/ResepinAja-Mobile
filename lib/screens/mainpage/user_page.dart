@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:resepinajamobile/models/Item.dart';
 import 'package:resepinajamobile/models/UserData.dart';
-import 'package:resepinajamobile/screens/mainpage/postedresep_page.dart';
+import 'package:resepinajamobile/screens/component/cards.dart';
+import 'package:resepinajamobile/services/RecipeService.dart';
 import 'package:resepinajamobile/services/UserService.dart';
+import 'package:resepinajamobile/models/AppData.dart';
+import 'dart:developer';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.id_user});
@@ -13,17 +17,22 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   Userdata? data;
+  List<Item>? reseptersimpan;
 
   @override
   void initState() {
     super.initState();
-    setValue();
+    _loadData();
+    log(AppData().id_user.toString());
+    log(AppData().token.toString());
   }
 
-  void setValue() async {
+  void _loadData() async {
     final user = await Userservice.showProfile(widget.id_user);
+    final tersimpan = await Recipeservice.showResepSendiri(widget.id_user);
     if (user != null) {
       setState(() {
+        reseptersimpan = tersimpan;
         data = user;
       });
     }
@@ -41,7 +50,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ? Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(15),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -52,34 +61,35 @@ class _ProfilePageState extends State<ProfilePage> {
                             radius: 60,
                             backgroundImage: AssetImage('assets/profile_placeholder.webp'),
                           ),
-                          SizedBox(height: 10,),
+                          SizedBox(height: 10),
                           Center(
                             child: Text(
                               data!.username,
                               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
                             ),
                           ),
-                          SizedBox(height: 10,),
-                          Center(child: Text(data!.deskripsi_user,style: TextStyle(fontSize: 18),)),
+                          SizedBox(height: 10),
+                          Center(child: Text(data!.deskripsi_user, style: TextStyle(fontSize: 18))),
                         ],
                       ),
-                      SizedBox(height: 10,),
-                      SizedBox(
-                        width: double.infinity,
-                        child: TextButton(
-                          style: TextButton.styleFrom(backgroundColor: Colors.amber),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => ResepSendiri(id_user: data!.id_user)),
-                            );
-                          },
-                          child: Text(
-                            "Lihat Postingan Resep",
-                            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18, color: Colors.black),
+                      SizedBox(height: 10),
+                      reseptersimpan == null
+                          ? const Center(child: CircularProgressIndicator())
+                          : Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: reseptersimpan?.length ?? 0,
+                                  itemBuilder: (context, index) {
+                                    return CardItem_Hori(data: reseptersimpan![index]);
+                                  },
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
                     ],
                   ),
                 ),

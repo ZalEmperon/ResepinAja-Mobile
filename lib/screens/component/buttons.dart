@@ -4,6 +4,7 @@ import 'package:resepinajamobile/models/Detail.dart';
 import 'package:resepinajamobile/screens/mainpage/edit_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:developer';
 
 class SaveButton extends StatefulWidget {
   const SaveButton({super.key, required this.id_resep});
@@ -31,7 +32,7 @@ class _SaveButtonState extends State<SaveButton> {
     setState(() => _isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/check-saved/$id_user/${widget.id_resep}'),
+        Uri.parse('http://192.168.100.9:8000/api/check-saved/$id_user/${widget.id_resep}'),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
@@ -55,7 +56,7 @@ class _SaveButtonState extends State<SaveButton> {
     try {
       final endpoint = _isSaved ? 'unsave-recipe' : 'save-recipe';
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/$endpoint'),
+        Uri.parse('http://192.168.100.9:8000/api/$endpoint'),
         headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
         body: jsonEncode({'id_user': id_user, 'id_resep': widget.id_resep}),
       );
@@ -86,8 +87,7 @@ class _SaveButtonState extends State<SaveButton> {
 }
 
 class EditButton extends StatefulWidget {
-  const EditButton({super.key, required this.id_resep, required this.data_detail});
-  final int id_resep;
+  const EditButton({super.key, required this.data_detail});
   final Detail data_detail;
 
   @override
@@ -144,8 +144,8 @@ class DeleteButton extends StatelessWidget {
               TextButton(onPressed: () => Navigator.pop(context), child: Text("Batal")),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
                   _deleteRecipe(context);
+                  // Navigator.pop(context);
                 },
                 child: Text("Hapus", style: TextStyle(color: Colors.red)),
               ),
@@ -158,19 +158,25 @@ class DeleteButton extends StatelessWidget {
     final token = AppData().token;
 
     final response = await http.delete(
-      Uri.parse('http://10.0.2.2:8000/api/deleteresep/$id_resep'),
-      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token'},
+      Uri.parse('http://192.168.100.9:8000/api/deleteresep'),
+      headers: {'Accept': 'application/json', 'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'id_resep': id_resep
+        }),
     );
 
     final responseData = jsonDecode(response.body);
 
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Resep berhasil dihapus')));
+      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Resep berhasil dihapus')));
+      Navigator.pop(context);
+      Navigator.of(context,rootNavigator: true).pop();
       if (onDeleted != null) onDeleted!();
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal menghapus: ${responseData['message']}')));
+      log(responseData['message']);
+      // ScaffoldMessenger.of(
+      //   context,
+      // ).showSnackBar(SnackBar(content: Text('Gagal menghapus: ${responseData['message']}')));
     }
   }
 }

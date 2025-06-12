@@ -32,10 +32,10 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    setValue();
+    _loadData();
   }
 
-  void setValue() async {
+  void _loadData() async {
     final data = await Recipeservice.showResepDetail(widget.id_resep);
     if (data != null) {
       setState(() {
@@ -49,7 +49,7 @@ class _DetailPageState extends State<DetailPage> {
 
   Future<void> _getRating() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/user-rating/${data_detail!.id_resep}/$userId'),
+      Uri.parse('http://192.168.100.9:8000/api/user-rating/${data_detail!.id_resep}/$userId'),
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
     );
     final responseData = jsonDecode(response.body);
@@ -80,7 +80,7 @@ class _DetailPageState extends State<DetailPage> {
       final token = AppData().token;
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/api/submit-rating'),
+        Uri.parse('http://192.168.100.9:8000/api/submit-rating'),
         headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
         body: jsonEncode({
           'id_resep': data_detail?.id_resep,
@@ -139,7 +139,7 @@ class _DetailPageState extends State<DetailPage> {
                   child: Column(
                     children: [
                       Image.network(
-                        "http://10.0.2.2:8000/storage/${data_detail!.gambar}",
+                        "http://192.168.100.9:8000/storage/${data_detail!.gambar}",
                         height: 350,
                         width: MediaQuery.of(context).size.width * 1,
                         fit: BoxFit.cover,
@@ -157,9 +157,14 @@ class _DetailPageState extends State<DetailPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      data_detail!.judul,
-                                      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
+                                    SizedBox(
+                                      width: 275,
+                                      child: Text(
+                                        data_detail!.judul,
+                                        maxLines: 5,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 24),
+                                      ),
                                     ),
                                     InkWell(
                                       onTap: () {
@@ -171,8 +176,8 @@ class _DetailPageState extends State<DetailPage> {
                                         );
                                       },
                                       child: Text(
-                                        'Oleh : ${data_detail!.username}',
-                                        style: TextStyle(fontSize: 20),
+                                        'Oleh ${data_detail!.username}',
+                                        style: TextStyle(fontSize: 16),
                                       ),
                                     ),
                                   ],
@@ -180,10 +185,7 @@ class _DetailPageState extends State<DetailPage> {
                                 userId == data_detail!.id_user
                                     ? Row(
                                       children: [
-                                        EditButton(
-                                          id_resep: data_detail!.id_resep,
-                                          data_detail: data_detail!,
-                                        ),
+                                        EditButton(data_detail: data_detail!),
                                         SizedBox(width: 5),
                                         DeleteButton(id_resep: data_detail!.id_resep),
                                       ],
@@ -191,6 +193,12 @@ class _DetailPageState extends State<DetailPage> {
                                     : SaveButton(id_resep: data_detail!.id_resep),
                               ],
                             ),
+                            SizedBox(height: 10),
+                            Text(
+                              "${data_detail!.ktg_masak}",
+                              style: TextStyle(color: Colors.brown[800], fontWeight: FontWeight.w600),
+                            ),
+                            Text("${data_detail!.wkt_masak} Menit, untuk ${data_detail!.prs_resep} Porsi"),
                             SizedBox(height: 10),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -203,20 +211,23 @@ class _DetailPageState extends State<DetailPage> {
                                     final hasHalfStar = (rating - filledStars) >= 0.5;
 
                                     if (index < filledStars) {
-                                      return const Icon(Icons.star, color: Colors.amber, size: 30,);
+                                      return const Icon(Icons.star, color: Colors.amber, size: 30);
                                     } else if (index == filledStars && hasHalfStar) {
-                                      return const Icon(Icons.star_half, color: Colors.amber, size: 30,);
+                                      return const Icon(Icons.star_half, color: Colors.amber, size: 30);
                                     } else {
-                                      return const Icon(Icons.star_border, color: Colors.amber, size: 30,);
+                                      return const Icon(Icons.star_border, color: Colors.amber, size: 30);
                                     }
                                   }),
                                 ),
                                 const SizedBox(width: 8),
-                                Text('${data_detail!.bintang} / 5', style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),),
+                                Text(
+                                  '${data_detail!.bintang} / 5',
+                                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.w700),
+                                ),
                               ],
                             ),
                             SizedBox(height: 20),
-                            Text(data_detail!.deskripsi, style: TextStyle(fontSize: 18)),
+                            Text(data_detail!.deskripsi, style: TextStyle(fontSize: 16)),
                             SizedBox(height: 10),
                             Container(
                               decoration: BoxDecoration(
@@ -235,11 +246,24 @@ class _DetailPageState extends State<DetailPage> {
                                   "BAHAN",
                                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                                 ),
-                                children:
-                                    data_detail?.bahan_resep
-                                        .map((bahan) => ListTile(title: Text(bahan.nama_bahan)))
-                                        .toList() ??
-                                    [const ListTile(title: Text('No ingredients'))],
+                                children: List.generate(data_detail!.bahan_resep.length, (index) {
+                                  final bahan = data_detail!.bahan_resep[index];
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.amber,
+                                      child: Text((index + 1).toString()),
+                                    ),
+                                    title: Expanded(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(bahan.nama_bahan),
+                                          Text("${bahan.jumlah_bahan} ${bahan.satuan_bahan}"),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }),
                               ),
                             ),
                             SizedBox(height: 10),
@@ -260,11 +284,16 @@ class _DetailPageState extends State<DetailPage> {
                                   "ALAT",
                                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
                                 ),
-                                children:
-                                    data_detail?.alat_resep
-                                        .map((alat) => ListTile(title: Text(alat.nama_alat)))
-                                        .toList() ??
-                                    [const ListTile(title: Text('No tools'))],
+                                children: List.generate(data_detail!.alat_resep.length, (index) {
+                                  final alat = data_detail!.alat_resep[index];
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundColor: Colors.amber,
+                                      child: Text((index + 1).toString()),
+                                    ),
+                                    title: Text(alat.nama_alat),
+                                  );
+                                }),
                               ),
                             ),
                             SizedBox(height: 10),
@@ -297,7 +326,7 @@ class _DetailPageState extends State<DetailPage> {
                                           ),
                                         )
                                         .toList() ??
-                                    [const ListTile(title: Text('No steps'))],
+                                    [const ListTile(title: Text('Tidak ada Tahap'))],
                               ),
                             ),
                             SizedBox(height: 20),
@@ -325,7 +354,7 @@ class _DetailPageState extends State<DetailPage> {
                               ),
                             ),
                             SizedBox(height: 10),
-                            Text("Reviewmu : ", style: TextStyle(fontWeight: FontWeight.w600),),
+                            Text("Reviewmu : ", style: TextStyle(fontWeight: FontWeight.w600)),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -391,7 +420,10 @@ class _DetailPageState extends State<DetailPage> {
                                   child:
                                       _isSubmitting
                                           ? const CircularProgressIndicator(color: Colors.white)
-                                          : const Text("Submit Review"),
+                                          : const Text(
+                                            "Submit Review",
+                                            style: TextStyle(color: Colors.white),
+                                          ),
                                 ),
                               ),
                             ],

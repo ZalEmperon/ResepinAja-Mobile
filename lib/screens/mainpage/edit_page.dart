@@ -22,6 +22,11 @@ class _EditRecipePageState extends State<EditRecipePage> {
   late final TextEditingController _judulController;
   late final TextEditingController _deskripsiController;
   File? _gambar;
+  late TextEditingController _waktuController = TextEditingController();
+  late TextEditingController _porsiController = TextEditingController();
+  late String? kategori;
+  late List<TextEditingController> _jumlahControllers;
+  late List<String?> satuan_bahan;
   late List<TextEditingController> _bahanControllers;
   late List<TextEditingController> _alatControllers;
   late List<TextEditingController> _langkahControllers;
@@ -32,11 +37,23 @@ class _EditRecipePageState extends State<EditRecipePage> {
     super.initState();
     _judulController = TextEditingController(text: widget.recipe.judul);
     _deskripsiController = TextEditingController(text: widget.recipe.deskripsi);
-    _currentImageUrl = "http://10.0.2.2:8000/storage/${widget.recipe.gambar}";
+    _waktuController = TextEditingController(text: widget.recipe.wkt_masak.toString());
+    _porsiController = TextEditingController(text: widget.recipe.prs_resep.toString());
+    kategori = widget.recipe.ktg_masak;
+    _currentImageUrl = "http://192.168.100.9:8000/storage/${widget.recipe.gambar}";
 
     _bahanControllers =
         widget.recipe.bahan_resep.map((bahan) => TextEditingController(text: bahan.nama_bahan)).toList();
     if (_bahanControllers.isEmpty) _bahanControllers.add(TextEditingController());
+
+    _jumlahControllers =
+        widget.recipe.bahan_resep
+            .map((bahan) => TextEditingController(text: bahan.jumlah_bahan.toString()))
+            .toList();
+    if (_jumlahControllers.isEmpty) _jumlahControllers.add(TextEditingController());
+
+    satuan_bahan = widget.recipe.bahan_resep.map((bahan) => bahan.satuan_bahan).toList();
+    if (satuan_bahan.isEmpty) satuan_bahan.add("Buah");
 
     _alatControllers =
         widget.recipe.alat_resep.map((alat) => TextEditingController(text: alat.nama_alat)).toList();
@@ -59,6 +76,24 @@ class _EditRecipePageState extends State<EditRecipePage> {
     }
   }
 
+  void _addIngredientField() {
+    setState(() {
+      _bahanControllers.add(TextEditingController());
+      _jumlahControllers.add(TextEditingController());
+      satuan_bahan.add("Buah"); // Default value
+    });
+  }
+
+  void _removeIngredientField(int index) {
+    setState(() {
+      _bahanControllers[index].dispose();
+      _jumlahControllers[index].dispose();
+      _bahanControllers.removeAt(index);
+      _jumlahControllers.removeAt(index);
+      satuan_bahan.removeAt(index);
+    });
+  }
+
   void _addField(List<TextEditingController> list) {
     setState(() {
       list.add(TextEditingController());
@@ -77,17 +112,20 @@ class _EditRecipePageState extends State<EditRecipePage> {
     if (_formKey.currentState!.validate()) {
       try {
         final token = AppData().token;
-        var request = http.MultipartRequest(
-          'POST',
-          Uri.parse('http://10.0.2.2:8000/api/updateresep/${widget.recipe.id_resep}'),
-        );
+        var request = http.MultipartRequest('POST', Uri.parse('http://192.168.100.9:8000/api/updateresep/'));
         request.headers['Accept'] = 'application/json';
         request.headers['Authorization'] = 'Bearer $token';
 
         // Add text fields
+        request.fields['id_resep'] = widget.recipe.id_resep.toString();
         request.fields['judul'] = _judulController.text;
         request.fields['deskripsi'] = _deskripsiController.text;
-        request.fields['_method'] = 'PUT'; 
+        request.fields['_method'] = 'PUT';
+        request.fields['wkt_masak'] = _waktuController.text;
+        request.fields['prs_resep'] = _porsiController.text;
+        request.fields['ktg_masak'] = kategori!;
+        request.fields['jumlah'] = jsonEncode(_jumlahControllers.map((c) => c.text).toList());
+        request.fields['satuan'] = jsonEncode(satuan_bahan.toList());
         request.fields['bahan'] = jsonEncode(_bahanControllers.map((c) => c.text).toList());
         request.fields['alat'] = jsonEncode(_alatControllers.map((c) => c.text).toList());
         request.fields['langkah'] = jsonEncode(_langkahControllers.map((c) => c.text).toList());
@@ -171,7 +209,7 @@ class _EditRecipePageState extends State<EditRecipePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
 
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +234,7 @@ class _EditRecipePageState extends State<EditRecipePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
 
               // Deskripsi
               TextFormField(
@@ -210,15 +248,84 @@ class _EditRecipePageState extends State<EditRecipePage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
 
-              // Bahan
-              _buildDynamicFields(
-                title: 'Bahan-bahan',
-                controllers: _bahanControllers,
-                hintText: 'Masukkan bahan',
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Waktu Masak', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                          child: TextFormField(
+                            controller: _waktuController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: '5 Menit',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap masukkan Waktu Masak';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Porsi Resep', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                          child: TextFormField(
+                            controller: _porsiController,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              hintText: '10 Orang',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap masukkan Porsi resep';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
+              Text('Kategori Resep', style: const TextStyle(fontWeight: FontWeight.bold)),
+              DropdownButton(
+                isExpanded: true,
+                value: kategori,
+                items: [
+                  DropdownMenuItem<String>(value: "Makanan Ringan", child: Text("Makanan Ringan")),
+                  DropdownMenuItem<String>(value: "Makanan Berat", child: Text("Makanan Berat")),
+                  DropdownMenuItem<String>(value: "Minuman", child: Text("Minuman")),
+                  DropdownMenuItem<String>(value: "Snack", child: Text("Snack")),
+                  DropdownMenuItem<String>(value: "Dessert", child: Text("Dessert")),
+                ],
+                onChanged: (String? value) {
+                  setState(() {
+                    kategori = value!;
+                  });
+                },
+              ),
+              const SizedBox(height: 15),
+
+              _CustomDynamicFields(),
+              const SizedBox(height: 15),
 
               // Alat
               _buildDynamicFields(
@@ -226,7 +333,7 @@ class _EditRecipePageState extends State<EditRecipePage> {
                 controllers: _alatControllers,
                 hintText: 'Masukkan alat',
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 15),
 
               // Langkah Pembuatan
               _buildDynamicFields(
@@ -300,6 +407,107 @@ class _EditRecipePageState extends State<EditRecipePage> {
             onPressed: () => _addField(controllers),
             icon: const Icon(Icons.add),
             label: const Text('Tambah'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _CustomDynamicFields() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Bahan Bahan Resep", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _bahanControllers.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Ingredient Name
+                        Flexible(
+                          flex: 3,
+                          child: TextFormField(
+                            controller: _bahanControllers[index],
+                            decoration: InputDecoration(
+                              hintText: "Garam Madu",
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap isi nama bahan';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Quantity
+                        Flexible(
+                          flex: 1,
+                          child: TextFormField(
+                            controller: _jumlahControllers[index],
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(hintText: "500", border: const OutlineInputBorder()),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Harap isi jumlah';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Unit Dropdown
+                        Flexible(
+                          flex: 1,
+                          child: DropdownButtonFormField<String>(
+                            isExpanded: true,
+                            value: satuan_bahan[index],
+                            items: const [
+                              DropdownMenuItem(value: "Buah", child: Text("Buah")),
+                              DropdownMenuItem(value: "gr", child: Text("Gram")),
+                              DropdownMenuItem(value: "ml", child: Text("Mililiter")),
+                            ],
+                            onChanged: (String? value) {
+                              setState(() {
+                                satuan_bahan[index] = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // Remove Button
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          style: IconButton.styleFrom(backgroundColor: Colors.redAccent),
+                          onPressed: () => _removeIngredientField(index),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _addIngredientField,
+            icon: const Icon(Icons.add),
+            label: const Text('Tambah Bahan'),
           ),
         ),
       ],

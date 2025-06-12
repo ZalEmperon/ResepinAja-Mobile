@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:resepinajamobile/models/AppData.dart';
+import 'package:resepinajamobile/screens/mainpage/base_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final userId = AppData().id_user;
     await Future.delayed(Duration(seconds: 3));
     if (token != null && userId != null) {
-      Navigator.pushReplacementNamed(context, '/');
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeBase()));
     } else {
       Navigator.pushReplacementNamed(context, '/login');
     }
@@ -34,7 +35,10 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset('assets/LogoResJa.png', height: 200, width: 200),
+            ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset('assets/LogoResJa.jpg', height: 200, width: 200),
+                ),
             SizedBox(height: 20),
             CircularProgressIndicator(),
           ],
